@@ -5,7 +5,7 @@ use core::mem;
 use core::num::NonZeroUsize;
 use core::ptr::{self, NonNull};
 
-use alloc_wg::alloc::{AllocRef, BuildAllocRef, DeallocRef, Global, NonZeroLayout};
+use alloc_wg::alloc::{AllocRef, BuildAllocRef, DeallocRef, Global, NonZeroLayout, ReallocRef};
 
 pub enum BumpAllocErr<A: AllocRef> {
     ZeroCapacity,
@@ -130,6 +130,17 @@ impl<A: DeallocRef> AllocRef for &BumpAlloc<A> {
     }
 }
 
+impl<A: DeallocRef> ReallocRef for &BumpAlloc<A> {
+    unsafe fn realloc(
+        &self,
+        _ptr: NonNull<u8>,
+        _old_layout: NonZeroLayout,
+        new_layout: NonZeroLayout,
+    ) -> Result<NonNull<u8>, Self::Error> {
+        self.alloc(new_layout)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::BumpAlloc;
@@ -169,6 +180,17 @@ mod tests {
 
             prev = Some((new_stack, new_alloc));
         }
+    }
+
+    #[test]
+    fn bump_string_realloc() {
+        use alloc_wg::string::String;
+        let bump = BumpAlloc::<Global>::with_capacity_in(256, Global);
+
+        let test = "test";
+        let mut string = String::new_in(&bump);
+        string.push_str(test);
+        assert_eq!(string, test);
     }
 
     #[test]
