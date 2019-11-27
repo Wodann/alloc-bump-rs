@@ -75,11 +75,16 @@ impl<A: AllocRef> BumpAlloc<A> {
         }
     }
 
-    pub fn reset(&self) {
+    pub fn reset(&mut self) {
+        unsafe {
+            self.reset_unchecked();
+        }
+    }
+
+    pub unsafe fn reset_unchecked(&self) {
         let new_ptr = self.data.as_ptr() as usize;
         let new_ptr = new_ptr + self.layout.size().get();
-        self.ptr
-            .set(unsafe { NonNull::new_unchecked(new_ptr as *mut u8) });
+        self.ptr.set(NonNull::new_unchecked(new_ptr as *mut u8));
     }
 }
 
@@ -162,12 +167,25 @@ mod tests {
 
     #[test]
     fn bump_reset() {
+        let mut bump = BumpAlloc::<Global>::with_capacity_in(mem::size_of::<f32>(), Global);
+
+        for idx in 0..=2 {
+            bump.reset();
+
+            let new_stack: f32 = idx as f32;
+            let new_alloc = bump.alloc_t(new_stack.clone()).unwrap();
+            assert_eq!(new_stack, *new_alloc);
+        }
+    }
+
+    #[test]
+    fn bump_reset_unchecked() {
         let bump = BumpAlloc::<Global>::with_capacity_in(mem::size_of::<f32>(), Global);
 
         let mut prev: Option<(f32, &mut f32)> = None;
 
         for idx in 0..=2 {
-            bump.reset();
+            unsafe { bump.reset_unchecked() };
 
             let new_stack: f32 = idx as f32;
             let new_alloc = bump.alloc_t(new_stack.clone()).unwrap();
