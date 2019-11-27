@@ -153,7 +153,7 @@ mod tests {
     use core::mem;
 
     #[test]
-    fn bump_alloc() {
+    fn bump_alloc_t() {
         let bump = BumpAlloc::<Global>::with_capacity_in(mem::size_of::<f32>() * 2, Global);
 
         let stack_a = 1.2f32;
@@ -201,6 +201,16 @@ mod tests {
     }
 
     #[test]
+    fn bump_clone_in() {
+        use alloc_wg::{boxed::Box, clone::CloneIn};
+        let bump = BumpAlloc::<Global>::with_capacity_in(2 * mem::size_of::<f32>(), Global);
+
+        let box_a = Box::new_in(1.2f32, &bump);
+        let box_b = box_a.clone_in(&bump);
+        assert_eq!(*box_a, *box_b);
+    }
+
+    #[test]
     fn bump_string_realloc() {
         use alloc_wg::string::String;
         let bump = BumpAlloc::<Global>::with_capacity_in(256, Global);
@@ -209,6 +219,19 @@ mod tests {
         let mut string = String::new_in(&bump);
         string.push_str(test);
         assert_eq!(string, test);
+    }
+
+    #[test]
+    fn bump_dyn() {
+        use alloc_wg::boxed::Box;
+        use core::any::Any;
+
+        let bump = BumpAlloc::<Global>::with_capacity_in(mem::size_of::<f32>(), Global);
+
+        let stack_a = 1.23f32;
+        let any_a: Box<dyn Any, _> = Box::new_in(stack_a, &bump);
+
+        assert_eq!(any_a.downcast_ref::<f32>(), Some(&stack_a));
     }
 
     #[test]

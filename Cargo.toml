@@ -5,7 +5,7 @@ authors = ["Wodann <wodannson@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-alloc-wg = { git = "https://github.com/Wodann/alloc-wg", rev = "0794539" }
+alloc-wg = { git = "https://github.com/Wodann/alloc-wg", branch = "feature/immutable-ref" }
 
 [dev-dependencies]
 trybuild = "1.0"
