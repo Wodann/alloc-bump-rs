@@ -1,0 +1,11 @@
+[package]
+name = "alloc_bump"
+version = "0.1.0"
+authors = ["Wodann <wodannson@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+alloc-wg = { git = "https://github.com/Wodann/alloc-wg", rev = "0794539" }
+
+[dev-dependencies]
+trybuild = "1.0"

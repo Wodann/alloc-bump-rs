@@ -1,0 +1,10 @@
+error[E0597]: `bump` does not live long enough
+  --> $DIR/lifetime.rs:10:9
+   |
+10 |         bump.alloc_t(stack).unwrap()
+   |         ^^^^------------------------
+   |         |
+   |         borrowed value does not live long enough
+   |         borrow later used here
+11 |     };
+   |     - `bump` dropped here while still borrowed
